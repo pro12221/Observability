@@ -1,0 +1,11 @@
+role: "Stateless-Aggregator"
+existingConfigMaps:
+- container-out
+dataDir: /data
+service:
+  enabled: false
+
+serviceHeadless:
+  enabled: false
+config:
+  configMapKey: "vector.toml"

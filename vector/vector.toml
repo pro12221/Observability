@@ -1,0 +1,34 @@
+[sources.kafka]
+  type = "kafka"
+  bootstrap_servers = "kafka.kafka.svc.cluster.local:9092" # 环境变量获取
+  group_id = "container-out-comsumer" # 确保每个实例不一样
+  topics = ["^.*\\.std"]   # 主题列表
+
+[transforms.parse_json]
+type = "remap"
+inputs = ["kafka"]
+source = '''
+# 如果 cluster 不存在，补一个默认值
+if !exists(.cluster) {
+  .cluster = "unknown"
+}
+
+# 如果 namespace 不存在，补一个默认值
+if !exists(.namespace) {
+  .namespace = "default"
+}
+
+# 如果 topic 不存在，补一个默认值
+if !exists(.topic) {
+  .topic = "unknown"
+}
+'''
+
+[sinks.out_es]
+type = "elasticsearch"
+inputs = [ "parse_json" ]
+endpoint = "http://es-elasticsearch.es.svc.cluster.local:9200"
+mode = "bulk"
+compression = "none"
+[sinks.out_es.bulk]
+index = "{{ topic }}-%Y.%m.%d"

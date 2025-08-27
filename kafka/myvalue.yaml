@@ -1,0 +1,35 @@
+listeners:
+  client:
+    containerPort: 9092
+    protocol: PLAINTEXT
+    name: CLIENT
+  controller:
+    name: CONTROLLER
+    containerPort: 9093
+    protocol: PLAINTEXT
+  interbroker:
+    containerPort: 9094
+    protocol: PLAINTEXT
+    name: INTERNAL
+
+  external:
+    containerPort: 9095
+    protocol: PLAINTEXT
+    name: EXTERNAL
+  extraListeners: []
+
+  overrideListeners: ""
+  advertisedListeners: ""
+  securityProtocolMap: ""
+
+controller:
+  replicaCount: 3
+  persistence:
+    storageClass: nfs-sc
+  resources:
+     requests:
+       cpu: 100m
+       memory: 512Mi
+     limits:
+       cpu: 500m
+       memory: 1Gi

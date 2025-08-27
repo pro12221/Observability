@@ -1,0 +1,70 @@
+global:
+  security:
+    allowInsecureImages: true
+  kibanaEnabled: true
+
+
+
+volumePermissions:
+  enabled: false
+
+sysctlImage:
+  enabled: false
+
+
+master:
+  replicaCount: 1
+  persistence:
+    size: 20Gi
+    storageClass: nfs-sc
+  networkPolicy:
+    enabled: false
+  pdb:
+    create: false
+  resourcesPreset: medium
+ 
+
+data:
+  persistence:
+    size: 20Gi
+    storageClass: nfs-sc
+  replicaCount: 1
+  networkPolicy:
+    enabled: false
+  pdb:
+    create: false
+  resourcesPreset: medium
+
+
+coordinating:
+  heapSize: 500m # 应用程序的堆内存（Heap Memory），推荐设置为容器内存一半
+  replicaCount: 1
+  networkPolicy:
+    enabled: false
+  pdb:
+    create: false
+  resourcesPreset: medium
+
+
+ingest:
+  replicaCount: 1
+  networkPolicy:
+    enabled: false
+  pdb:
+    create: false
+  resourcesPreset: small
+
+
+kibana:
+  persistence:
+    size: 20Gi
+    storageClass: nfs-sc
+  pdb:
+    create: false
+  resources:
+     requests:
+       cpu: 100m
+       memory: 500Mi
+     limits:
+       cpu: 2
+       memory: 2048Mi

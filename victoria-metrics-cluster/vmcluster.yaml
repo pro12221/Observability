@@ -1,0 +1,47 @@
+# vmcluster.yaml
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMCluster
+metadata:
+  name: vm-cluster
+  namespace: vm
+spec:
+  retentionPeriod: "1d"
+  vmselect:
+    replicaCount: 1
+    resources:
+      requests:
+        memory: 1Gi
+        cpu: 500m
+      limits:
+        memory: 2Gi
+        cpu: 500m
+  vminsert:
+    replicaCount: 1
+    resources:
+      requests:
+        memory: 1Gi
+        cpu: 500m # 将 0.5 修改为 "500m"
+      limits:
+        memory: 2Gi
+        cpu: 1
+  vmstorage:
+    replicaCount: 1 
+    resources:
+      requests:
+        memory: 2Gi
+        cpu: 1
+      limits:
+        memory: 4Gi
+        cpu: 1
+    storage:
+      volumeClaimTemplate:
+        metadata:
+          name: vmstorage-data
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          storageClassName: "nfs-sc"
+          resources:
+            requests:
+              storage: 20Gi
+    storageDataPath: "/victoria-metrics-data"

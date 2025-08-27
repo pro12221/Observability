@@ -1,0 +1,20 @@
+operator:
+  disable_prometheus_converter: false
+  # 将一些特定的配置（比如 Prometheus、Alertmanager 等自定义资源）自动转换成 Prometheus 能够理解的格式。
+  prometheus_converter_add_argocd_ignore_annotations: false
+# 不会自动为生成的 Prometheus 资源添加用于让 ArgoCD 忽略差异的注解。
+  enable_converter_ownership: false
+  useCustomConfigReloader: false
+serviceMonitor:
+  enabled: true
+# 开启就代表开启监控功能
+  vm: false
+# 使用serviceMonitor监控
+  extraLabels: {}
+  annotations: {}
+  relabelings: []
+  scheme: ""
+  interval: ""
+  scrapeTimeout: ""
+  tlsConfig: {}
+  basicAuth: {}

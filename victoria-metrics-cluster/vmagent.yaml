@@ -1,0 +1,36 @@
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMAgent
+metadata:
+  name: vmagent
+  namespace: vm
+spec:
+  serviceScrapeNamespaceSelector: {}
+  podScrapeNamespaceSelector: {}
+  podScrapeSelector: {}
+  serviceScrapeSelector: {}
+  nodeScrapeSelector: {}
+  nodeScrapeNamespaceSelector: {}
+  staticScrapeSelector: {}
+  staticScrapeNamespaceSelector: {}
+  replicaCount: 1
+  service:
+    type: NodePort
+  resources:
+      requests:
+        memory: "500Mi"
+        cpu: "250m"
+      limits:
+        memory: "500Mi"
+        cpu: "250m"
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: vmagent
+  shardCount: 1
+  remoteWrite:
+    - url: "http://vminsert-vm-cluster.vm.svc.cluster.local:8480/insert/0/prometheus/api/v1/write"

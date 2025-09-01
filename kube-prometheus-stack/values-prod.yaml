@@ -1,0 +1,65 @@
+prometheus:
+  prometheusSpec:
+    retention: 7d
+    replicas: 1
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: "nfs-sc"
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 20Gi
+  service:
+    type: NodePort
+    nodePort: 30090
+grafana:
+  assertNoLeakedSecrets: false
+  persistence:
+    enabled: true
+    type: pvc
+    storageClassName: "nfs-sc"
+    accessModes:
+     - ReadWriteOnce
+    size: 20Gi
+  adminPassword: 9ijo@E6Msw*bc9QF
+  grafana.ini:
+    users:
+      viewers_can_edit: true
+  sidecar:
+    dashboards:
+      enabled: false
+    datasources:
+      enabled: false
+  service:
+    type: NodePort
+    nodePort: 30080
+alertmanager:
+    alertmanagerConfigSelector:
+      matchLabels:
+        alertmanagerConfig: custom-config
+  service:
+    type: NodePort
+    nodePort: 30093
+  alertmanagerConfig:
+    enabled: true
+    name: custom-config
+    config:
+      global:
+        resolve_timeout: 5m
+        smtp_from: '18171703523@163.com'
+        smtp_smarthost: 'smtp.163.com:25'
+        smtp_auth_username: '18171703523@163.com'
+        smtp_auth_password: 'PTfQ83TfaYafryKN' # Please use your application-specific password (authorization code)
+        smtp_require_tls: false
+        smtp_hello: '163.com'
+      route:
+        group_by: ['alertname']
+        group_wait: 30s
+        group_interval: 5m
+        repeat_interval: 30s
+        receiver: '163.email'
+      receivers:
+      - name: '163.email'
+        email_configs:
+        - to: '18171703523@163.com'

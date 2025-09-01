@@ -506,45 +506,82 @@ alertmanager:
   ##      https://prometheus.io/webtools/alerting/routing-tree-editor/
   ##
   config:
-    global:
-      resolve_timeout: 5m
-    inhibit_rules:
-      - source_matchers:
-          - 'severity = critical'
-        target_matchers:
-          - 'severity =~ warning|info'
-        equal:
-          - 'namespace'
-          - 'alertname'
-      - source_matchers:
-          - 'severity = warning'
-        target_matchers:
-          - 'severity = info'
-        equal:
-          - 'namespace'
-          - 'alertname'
-      - source_matchers:
-          - 'alertname = InfoInhibitor'
-        target_matchers:
-          - 'severity = info'
-        equal:
-          - 'namespace'
-      - target_matchers:
-          - 'alertname = InfoInhibitor'
-    route:
-      group_by: ['namespace']
-      group_wait: 30s
-      group_interval: 5m
-      repeat_interval: 12h
-      receiver: 'null'
-      routes:
-      - receiver: 'null'
-        matchers:
-          - alertname = "Watchdog"
-    receivers:
-    - name: 'null'
-    templates:
-    - '/etc/alertmanager/config/*.tmpl'
+   global:
+     resolve_timeout: 5m
+   route:
+     group_by: ['namespace']
+     group_wait: 30s
+     group_interval: 5m
+     repeat_interval: 12h
+     receiver: "null"
+     routes:
+       - match:
+           namespace: 'prod-iaas'
+         receiver: 'iaas-monitor'
+       - match:
+           namespace: 'prod-paas'
+         receiver: 'p2p-monitor'
+
+         # sre
+       - match_re:
+           alertname: 'KubeJobFailed|KubeCPUOvercommit|KubeMemoryOvercommit|KubeVersionMismatch'
+         receiver: 'null'
+       - match_re:
+           job: '^kube.*|apiserver|coredns|node-exporter'
+         receiver: 'sre-monitor'
+       - match_re:
+           alertname: '^kube.*|^Kube.*'
+         receiver: 'sre-monitor'
+       - match:
+           alertname: 'Watchdog'
+         receiver: 'sre-monitor'
+#        - receiver: "final-monitor"
+#          matchers:
+#            - severity =~ "warning|critical"
+   receivers:
+   - name: 'null'
+
+   # to xinyu
+   - name: 'iaas-monitor'
+     slack_configs:
+     - channel: 'iaas-monitor'
+       api_url: 'https://hooks.slack.com/services/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'
+       send_resolved: true
+       title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] Monitoring'
+       text: >-
+         {{ range .Alerts }}
+           *{{ .Labels.alertname }}*: {{ .Annotations.description }}
+           <@U07EBCD05E0>
+         {{ end }}
+
+   # to ween
+   - name: 'p2p-monitor'
+     slack_configs:
+     - channel: 'p2p-monitor'
+       api_url: 'https://hooks.slack.com/services/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'
+       send_resolved: true
+       title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] Monitoring'
+       text: >-
+         {{ range .Alerts }}
+           *{{ .Labels.alertname }}*: {{ .Annotations.description }}
+           <@U087TQC1DFH>
+         {{ end }}
+
+   # to jabbok
+   - name: 'sre-monitor'
+     slack_configs:
+     - channel: 'sre-monitor'
+       api_url: 'https://hooks.slack.com/services/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'
+       send_resolved: true
+       title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] Monitoring'
+       text: >-
+         {{ range .Alerts }}
+           *{{ .Labels.alertname }}*: {{ .Annotations.description }}
+           *ENV*: prod
+           {{ if .Labels.name }}*{{ .Labels.name }}*: {{ .Labels.instance }}{{ else if .Labels.instance }}{{ .Labels.instance }}{{ end }}
+           *Summary*: {{ .Annotations.summary }}
+           <@U086T36673L>
+         {{ end }}
 
   ## Alertmanager configuration directives (as string type, preferred over the config hash map)
   ## stringConfig will be used only, if tplConfig is true
